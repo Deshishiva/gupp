@@ -14,7 +14,7 @@ async function sendMessage() {
     };
 
     
-    let backendURL = "https://YOUR-BACKEND-URL-HERE";
+    let backendURL = "https://gupp-2yfo.onrender.com";
 
     
     let res = await fetch(`${backendURL}/process`, {

@@ -7,39 +7,40 @@ from llm_client import LLMClient
 
 app = FastAPI(title="Assignment-Ready Memory AI")
 
-
+# ------------------------------
+# CORS FIX FOR RENDER + NETLIFY
+# ------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # You can replace "*" with "https://gupp.netlify.app"
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
-
 
 memory_engine = MemoryExtractor()
 persona_engine = PersonalityEngine()
 llm = LLMClient()
 
-
 @app.post("/process", response_model=ChatResponse)
 def process(req: ChatRequest):
 
-   
+    # Extract memory from messages
     memory = memory_engine.run(req.messages)
 
-  
+    # Build LLM prompt
     prompt = f"""
-User memory: {memory}
-User query: {req.query}
-"""
+    User memory: {memory}
+    User query: {req.query}
+    """
 
-   
+    # Call language model
     raw_reply = llm.generate(prompt)
 
-   
-    final_reply = persona_engine.apply_persona(req.persona, raw_reply)
+    # Apply personality
+    final_reply = persona_engine.apply(req.persona, raw_reply)
 
-   
+    # Return to frontend
     return {
         "reply": final_reply,
         "memory": memory
