@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Assignment Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+  <div class="p-4 bg-white shadow flex gap-2">
+    <input id="query" placeholder="Ask something..." class="border p-2 rounded flex-1"/>
+    <select id="persona" class="border p-2 rounded">
+      <option>Calm Mentor</option>
+      <option>Witty Friend</option>
+      <option>Therapist</option>
+    </select>
+    <button onclick="sendMessage()" class="bg-blue-500 text-white px-4 py-2 rounded">Send</button>
+  </div>
+
+  <div id="chat" class="flex-1 overflow-y-scroll p-4 space-y-4"></div>
+
+  <div class="p-4 bg-white shadow">
+    <h2 class="font-bold">Extracted Memory</h2>
+    <pre id="memory" class="text-sm text-gray-700"></pre>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
