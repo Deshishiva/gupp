@@ -1,41 +1,61 @@
-import os, requests
-from dotenv import load_dotenv
+import os
+import requests
 from openai import OpenAI
-from pathlib import Path
+from dotenv import load_dotenv
 
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(env_path)
+# Load .env ONLY for local development
+# In production (Render), env vars are injected automatically
+load_dotenv()
+
 
 class LLMClient:
     def __init__(self):
-        self.openai_key = os.getenv("OPENAI_API_KEY")
-        self.groq_key = os.getenv("GROQ_API_KEY")
+        # Read environment variables
+        self.openai_key = os.environ.get("OPENAI_API_KEY")
+        self.groq_key = os.environ.get("GROQ_API_KEY")
 
+        # Debug logs (safe – no secrets printed)
+        print("OPENAI KEY FOUND:", bool(self.openai_key))
+        print("GROQ KEY FOUND:", bool(self.groq_key))
+
+        # Initialize OpenAI client if key exists
         self.openai = OpenAI(api_key=self.openai_key) if self.openai_key else None
 
-   
-    def _openai(self, prompt):
+    # -------------------------
+    # OpenAI provider
+    # -------------------------
+    def _openai(self, prompt: str):
         if not self.openai:
             return None
+
         try:
-            res = self.openai.chat.completions.create(
+            response = self.openai.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}]
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                timeout=8
             )
-            
-            return res.choices[0].message.content
+
+            return response.choices[0].message.content
+
         except Exception as e:
             print("OpenAI ERROR:", e)
             return None
 
-  
-    def _groq(self, prompt):
+    # -------------------------
+    # Groq provider (fallback)
+    # -------------------------
+    def _groq(self, prompt: str):
         if not self.groq_key:
             return None
+
         try:
             payload = {
-                "model": "llama3-8b-8192-finetuned",  
-                "messages": [{"role": "user", "content": prompt}]
+                "model": "llama3-8b-8192",
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
             }
 
             headers = {
@@ -43,17 +63,16 @@ class LLMClient:
                 "Content-Type": "application/json"
             }
 
-            r = requests.post(
+            response = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 json=payload,
                 headers=headers,
                 timeout=8
             )
 
-            data = r.json()
-            print("GROQ RESPONSE:", data)
+            data = response.json()
+            print("GROQ RESPONSE STATUS:", response.status_code)
 
-          
             if "choices" in data:
                 return data["choices"][0]["message"]["content"]
 
@@ -63,14 +82,20 @@ class LLMClient:
             print("Groq ERROR:", e)
             return None
 
-    
-    def generate(self, prompt):
+    # -------------------------
+    # Public method
+    # -------------------------
+    def generate(self, prompt: str) -> str:
+        # Try OpenAI first
         out = self._openai(prompt)
         if out:
             return out
 
+        # Fallback to Groq
+        print("Falling back to Groq...")
         out = self._groq(prompt)
         if out:
             return out
 
-        return "LLM error: check API keys"
+        # Final failure
+        return "LLM error: no valid API keys or provider unavailable"
