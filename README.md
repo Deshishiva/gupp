@@ -68,5 +68,4 @@ backend/ → Server logic & AI integration
 ## 👨‍💻 Developed By:
 Shiva Kumar Deshi
 
-Shiva Kumar  
-GitHub: https://github.com/Deshishiva
+
