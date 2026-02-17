@@ -65,6 +65,9 @@ backend/ → Server logic & AI integration
 
 ---
 
+# Live link:
+https://gupp.netlify.app/
+
 ## 👨‍💻 Developed By:
 Shiva Kumar Deshi
 
